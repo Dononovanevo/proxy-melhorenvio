@@ -1,22 +1,30 @@
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: true, message: 'Method Not Allowed' });
+  }
+
   try {
-    const response = await fetch("https://api.melhorenvio.com.br/api/v2/me/shipment/calculate", {
-      method: "POST",
+    const token = process.env.TOKEN_MELHORENVIO;
+
+    const response = await fetch('https://melhorenvio.com.br/api/v2/me/shipment/calculate', {
+      method: 'POST',
       headers: {
-        "Authorization": "Bearer SEU_TOKEN_AQUI",
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(req.body)
     });
 
     const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("Erro no fetch:", error.message);
-    res.status(500).json({ error: true, message: "fetch failed" });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: true, message: data?.error || 'Erro na API do Melhor Envio' });
+    }
+
+    return res.status(200).json(data);
+
+  } catch (err) {
+    return res.status(500).json({ error: true, message: 'Erro interno do servidor', detail: err.message });
   }
 }
-
 
