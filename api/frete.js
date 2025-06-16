@@ -2,16 +2,18 @@ export default async function handler(req, res) {
   const path = req.url.replace('/api/frete', '');
   const url = `https://api.melhorenvio.com.br${path}`;
 
+  const headers = {
+    ...req.headers,
+    host: 'api.melhorenvio.com.br',
+  };
+
   const options = {
     method: req.method,
-    headers: {
-      ...req.headers,
-      host: 'api.melhorenvio.com.br',
-    }
+    headers,
   };
 
   if (!['GET', 'HEAD'].includes(req.method)) {
-    options.body = req.body;
+    options.body = JSON.stringify(req.body);
   }
 
   try {
@@ -22,3 +24,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: true, message: err.message });
   }
 }
+
